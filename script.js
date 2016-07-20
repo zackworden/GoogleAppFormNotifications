@@ -20,88 +20,85 @@ allow form answers to flow into google sheet
 // const
 // vars
 // enums
-	var serviceType = {
-		'slack' : 'SLACK',
-		'trello' : 'TRELLO',
-	}
-	var serviceFunction = {
+
+
+// classes
+	var notifiedServices = {
+		'test' : {
+			'emailAddress' : '',
+			'formResponse' : '',
+			'GetSubjectLine' : function()
+			{
+				return 'TEST subject line incorporating ' +  this.formResponse.responses[0]  + ' !' 
+			},
+			'GetBody' : function()
+			{
+				return 'TEST body incorporating ' +  this.formResponse.responses[0]  + ' !' 
+			},
+			'GetEmailAddress' : function()
+			{
+				return this.emailAddress;
+			},
+			'SendEmail' : function()
+			{
+				GmailApp.sendEmail( this.GetEmailAddress(), this.GetSubjectLine(), this.GetBody() );
+				/*
+				Logger.log("Email to: " + this.GetEmailAddress() );
+				Logger.log("Subject Line: " + this.GetSubjectLine() );
+				Logger.log("Body: " + this.GetBody() );
+				*/
+			},
+		},
 		'trello' : {
-			'subjectLine' : function( formResponse )
-				{
-					return 'trello subject line incorporating ' +  formResponse.responses[0]  + ' !' 
-				},
-			'body' : function( formResponse )
-				{
-					return 'trello body incorporating ' +  formResponse.responses[0]  + ' !' 
-				},
+			'emailAddress' : '',
+			'formResponse' : '',
+			'GetSubjectLine' : function()
+			{
+				return 'trello subject line incorporating ' +  this.formResponse.responses[0]  + ' !' 
+			},
+			'GetBody' : function()
+			{
+				return 'trello body incorporating ' +  this.formResponse.responses[0]  + ' !' 
+			},
+			'GetEmailAddress' : function()
+			{
+				return this.emailAddress;
+			},
+			'SendEmail' : function()
+			{
+				GmailApp.sendEmail( this.GetEmailAddress(), this.GetSubjectLine(), this.GetBody() );
+			},
 		},
 		'slack' : {
-			'subjectLine' : function( formResponse )
+			'emailAddress' : '',
+			'formResponse' : '',
+			'GetSubjectLine' : function()
 			{
-				return 'slack subject line incorporating ' +  formResponse.responses[0]  + ' !' 
+				return 'slack subject line incorporating ' +  this.formResponse.responses[0]  + ' !' 
 			},
-			'body' : function( formResponse )
+			'GetBody' : function()
 			{
-				return 'slack body incorporating ' +  formResponse.responses[0]  + ' !' 
+				return 'slack body incorporating ' +  this.formResponse.responses[0]  + ' !' 
+			},
+			'GetEmailAddress' : function()
+			{
+				return this.emailAddress;
+			},
+			'SendEmail' : function()
+			{
+				GmailApp.sendEmail( this.GetEmailAddress(), this.GetSubjectLine(), this.GetBody() );
 			},
 		}
-	}
+	};
 
-
-	var serviceFactory = new NotifiedServiceFactory();
-// classes
-	// notified service
-	function NotifiedServiceFactory()
-	{
-		this.GetSubjectLineFunction = function( serviceType )
-		{
-			switch ( serviceType )
-			{
-				case serviceType.slack:
-					return function(){
-						return 'IMPROVED Slack subject line: ' + formResponse.responses[0];
-					};
-				break;
-				case serviceType.trello:
-					return function(){
-						return 'IMPROVED Trello subject line: ' + formResponse.responses[0];
-					};
-				break;
-			}
-		}
-	}
-	function NotifiedService( recipient, getSubjectLineFunction, getBodyFunction )
-	{
-		this.recipient = recipient;
-		this.subjectLine = 'undefined subject line';
-		this.body = 'undefined body';
-		this.ParseSubjectLine = getSubjectLineFunction;
-		this.ParseBody = getBodyFunction;
-
-		this.GetRecipient = function()
-		{
-			return this.recipient;
-		}
-		this.GetSubjectLine = function( testFormResponse )
-		{
-			this.subjectLine = this.ParseSubjectLine( testFormResponse );
-			return this.subjectLine;
-		}
-		this.GetBody = function( testFormResponse )
-		{
-			this.body = this.ParseBody( testFormResponse );
-			return this.body;
-		}
-	}
 
 	// test form response
 	function TestFormResponse()
 	{
+		this.testLabel = 'Test Form Response';
 		this.responses = ['yes', 'Alabama', 'False', '37'];
 	}
 
-
-	// email service
 
 	// form service
 
@@ -110,22 +107,18 @@ allow form answers to flow into google sheet
 	function Test()
 	{
 		var testFormResponse = new TestFormResponse();
+
+
+		// notifiedServices.test.formResponse = testFormResponse;
+		//notifiedServices.test.SendEmail();
 		
-		var sl = serviceFunction.trello.subjectLine;
-		Logger.log( sl( testFormResponse ) );
+		var allServices = [ notifiedServices.test, notifiedServices.trello, notifiedServices.slack ];
 
-
-		/*
-		var testFormResponse = new TestFormResponse();
-		//var Trello_Getter = new GetSubjectLine_Trello.bind( undefined, [testFormResponse] );
-		//var Slack_Getter = new GetSubjectLine_Slack.bind( undefined, [testFormResponse] );
-		var Trello = new NotifiedService( undefined, serviceFactory.GetSubjectLineFunction( serviceType.trello ), undefined );
-		var Slack = new NotifiedService( undefined, serviceFactory.GetSubjectLineFunction( serviceType.slack ), undefined );
-		//var Slack = new NotifiedService( undefined, GetSubjectLine_Slack, undefined );
-
-		Logger.log( Trello.GetSubjectLine( testFormResponse ) );
-		Logger.log( Slack.GetSubjectLine( testFormResponse ) );
-
-		*/
+		for ( counter = 0; counter < allServices.length; counter ++ )
+		{
+			allServices[counter].formResponse = testFormResponse;
+			allServices[counter].SendEmail();
+		}
+		
 	}
 // run
